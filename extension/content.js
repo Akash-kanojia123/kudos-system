@@ -199,7 +199,7 @@ function extractNow() {
 
   const data = getEmail();
 
-  if (!data.body || data.body.length < 30) {
+  if (!data.body || data.body.length < 3) {
     alert('❌ Could not read email body.\n\nOpen an email first, then click Extract.');
     return;
   }
