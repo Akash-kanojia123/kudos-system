@@ -4,10 +4,11 @@
   "version": "3.0.0",
   "description": "Extract kudos from client emails",
   "permissions": ["storage", "tabs"],
-  "host_permissions": [
-    "https://mail.google.com/*",
-    "http://localhost:4000/*"
-  ],
+ "host_permissions": [
+  "https://mail.google.com/*",
+  "http://localhost:4000/*",
+  "https://kudos-system-production.up.railway.app/*"
+],
   "action": {
     "default_popup": "popup.html",
     "default_title": "Kudos Extractor"
