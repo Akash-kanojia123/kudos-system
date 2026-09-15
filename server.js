@@ -9,9 +9,9 @@ const app = express();
 // ============================================================
 // CORS — Allow Chrome Extension + Localhost + Railway
 // ============================================================
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (curl, Postman)
+    // Allow requests with no origin (curl, Postman, mobile apps)
     if (!origin) return callback(null, true);
     
     // Allow Chrome extensions (chrome-extension://...)
@@ -36,10 +36,9 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true
-}));
+};
 
-// Handle OPTIONS preflight requests
-app.options('*', cors());
+app.use(cors(corsOptions));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
