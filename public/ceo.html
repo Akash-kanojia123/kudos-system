@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CEO Review</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:linear-gradient(135deg,#0f2027,#203a43,#2c5364); min-height:100vh; padding:30px 20px; }
+    .wrap { max-width:950px; margin:0 auto; }
+
+    .page-header { color:#fff; margin-bottom:25px; padding:0 10px; }
+    .page-header h1 { font-size:30px; font-weight:800; letter-spacing:-0.5px; }
+    .page-header p { opacity:0.75; font-size:14px; margin-top:5px; }
+
+    .card { background:#fff; border-radius:20px; padding:32px; margin-bottom:22px; box-shadow:0 25px 60px rgba(0,0,0,0.3); }
+    .card h2 { font-size:22px; font-weight:800; color:#1a1f36; margin-bottom:8px; }
+    .meta { color:#8b93a7; font-size:13px; margin-bottom:20px; padding-bottom:15px; border-bottom:1px solid #eef0f5; }
+
+    .part { padding:20px; margin:15px 0; background:linear-gradient(135deg,#f8f9fc,#f0f3f9); border-radius:12px; font-size:14px; line-height:1.7; color:#3d4560; }
+    .part h3 { color:#1a1f36; font-size:15px; margin-bottom:12px; }
+
+    textarea { width:100%; padding:14px 16px; border:2px solid #e8ecf3; border-radius:12px; font-family:'Inter',sans-serif; font-size:14px; resize:vertical; margin:20px 0; background:#fafbfd; transition:all 0.2s; }
+    textarea:focus { outline:none; border-color:#667eea; background:#fff; box-shadow:0 0 0 4px rgba(102,126,234,0.1); }
+
+    .btn-row { display:flex; gap:12px; flex-wrap:wrap; }
+    button { padding:14px 26px; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.25s; }
+    .approve { background:linear-gradient(135deg,#4CAF50,#2e7d32); color:#fff; box-shadow:0 8px 20px rgba(76,175,80,0.35); }
+    .reject { background:linear-gradient(135deg,#f44336,#c62828); color:#fff; box-shadow:0 8px 20px rgba(244,67,54,0.35); }
+    button:hover { transform:translateY(-2px); }
+
+    .msg { padding:14px; border-radius:10px; margin-top:15px; display:none; font-size:14px; font-weight:600; text-align:center; }
+    .ok { background:#e7f9ee; color:#1a7f47; }
+    .err { background:#fdecef; color:#b91c32; }
+
+    .empty { text-align:center; padding:60px 20px; color:#8b93a7; }
+    .empty-icon { font-size:60px; margin-bottom:20px; opacity:0.5; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="page-header">
+      <h1>👔 CEO Review</h1>
+      <p>Review approved kudos and forward to Assistant</p>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <script>
+    const COLORS = ['#667eea', '#4CAF50', '#ff9800', '#e91e63', '#9c27b0'];
+
+    async function load() {
+      const res = await fetch('/api/ceo/pending');
+      const data = await res.json();
+      const list = document.getElementById('list');
+
+      if (data.count === 0) {
+        list.innerHTML = `
+          <div class="card">
+            <div class="empty">
+              <div class="empty-icon">✨</div>
+              <p>All caught up!</p>
+              <p style="font-size:14px;margin-top:8px;">No batches pending approval.</p>
+            </div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = '';
+      data.batches.forEach(b => {
+        const monthLabel = new Date(b.month + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+
+        const partsHtml = (b.parts || []).map((p, i) => `
+          <div class="part" style="border-left:5px solid ${COLORS[i % COLORS.length]};">
+            <h3>${p.title}</h3>
+            <div>${p.content}</div>
+          </div>
+        `).join('');
+
+        list.innerHTML += `
+          <div class="card">
+            <h2>🏆 ${b.teamName || 'Team'} — ${monthLabel}</h2>
+            <p class="meta">Sent by TM: ${new Date(b.sentToCeoAt).toLocaleString('en-IN')}</p>
+            ${partsHtml}
+            <textarea id="comment-${b._id}" rows="3" placeholder="Optional comment..."></textarea>
+            <div class="btn-row">
+              <button class="approve" onclick="approve('${b._id}')">✅ Approve & Forward to Assistant</button>
+              <button class="reject" onclick="reject('${b._id}')">↩️ Send Back to TM</button>
+            </div>
+            <div id="msg-${b._id}" class="msg"></div>
+          </div>
+        `;
+      });
+    }
+
+    function showMsg(id, text, ok) {
+      const m = document.getElementById('msg-' + id);
+      m.style.display = 'block';
+      m.className = 'msg ' + (ok ? 'ok' : 'err');
+      m.textContent = text;
+    }
+
+    async function approve(id) {
+      if (!confirm('Approve and forward to Assistant?')) return;
+      const comment = document.getElementById('comment-' + id).value;
+
+      const res = await fetch(`/api/ceo/approve/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment })
+      });
+      const data = await res.json();
+
+      showMsg(id, res.ok ? '✅ Approved and forwarded!' : '❌ ' + data.error, res.ok);
+      setTimeout(load, 1500);
+    }
+
+    async function reject(id) {
+      const comment = prompt('Reason for sending back to TM:');
+      if (comment === null) return;
+
+      const res = await fetch(`/api/ceo/reject/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment })
+      });
+      const data = await res.json();
+
+      showMsg(id, res.ok ? '↩️ Sent back to TM' : '❌ ' + data.error, res.ok);
+      setTimeout(load, 1500);
+    }
+
+    load();
+  </script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { width: 340px; margin: 0; font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 20px; box-sizing: border-box; }
+    h2 { margin: 0 0 15px; font-size: 18px; }
+    label { display: block; font-size: 12px; margin: 10px 0 4px; opacity: 0.9; }
+    input { width: 100%; padding: 10px 12px; border: none; border-radius: 8px; font-size: 13px; box-sizing: border-box; font-family: Arial, sans-serif; }
+    button { width: 100%; margin-top: 15px; padding: 12px; background: #fff; color: #667eea; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .status { margin-top: 12px; padding: 10px; border-radius: 6px; font-size: 12px; text-align: center; display: none; }
+    .ok { background: rgba(76,175,80,0.6); display: block; }
+    .err { background: rgba(244,67,54,0.6); display: block; }
+  </style>
+</head>
+<body>
+  <h2>🏆 Kudos Extractor</h2>
+  <label>Your Name (TL)</label>
+  <input id="tlName" placeholder="Akash Kanojia">
+  <label>Your Email</label>
+  <input id="tlEmail" type="email" placeholder="akash.kanojia@grazitti.com">
+  <label>Your Team</label>
+  <input id="team" placeholder="Analytics">
+  <label>Team Manager Email</label>
+  <input id="teamManager" type="email" placeholder="tm@grazitti.com">
+  <button id="saveBtn">Save Settings</button>
+  <div class="status" id="status"></div>
+  <script src="popup.js"></script>
+</body>
+</html>

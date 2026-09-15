@@ -1,0 +1,35 @@
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Inter',Arial,sans-serif; background:linear-gradient(135deg,#667eea,#764ba2); min-height:100vh; padding:30px 20px; }
+.container { max-width:820px; margin:0 auto; }
+header { text-align:center; color:#fff; margin-bottom:25px; }
+.header-icon { display:inline-flex; align-items:center; justify-content:center; width:64px; height:64px; background:rgba(255,255,255,0.2); border-radius:18px; font-size:32px; margin-bottom:12px; }
+header h1 { font-size:26px; font-weight:800; margin-bottom:6px; }
+header p { font-size:14px; opacity:0.85; }
+.card { background:#fff; border-radius:16px; padding:24px 28px; margin-bottom:18px; box-shadow:0 10px 30px rgba(0,0,0,0.1); }
+.card h2 { font-size:16px; font-weight:700; color:#1a1f36; margin-bottom:12px; }
+label { display:block; font-size:12px; font-weight:600; color:#3d4560; margin:12px 0 6px; }
+input, textarea { width:100%; padding:11px 14px; border:2px solid #e8ecf3; border-radius:10px; font-size:14px; font-family:'Inter',Arial,sans-serif; background:#fafbfd; color:#1a1f36; }
+input:focus, textarea:focus { outline:none; border-color:#667eea; background:#fff; box-shadow:0 0 0 4px rgba(102,126,234,0.1); }
+textarea { resize:vertical; min-height:100px; line-height:1.6; }
+
+.member { background:linear-gradient(135deg,#f8f9fc,#f0f3f9); padding:16px; border-radius:12px; margin-bottom:12px; border:1px solid #e8ecf3; }
+.member-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.member-num { display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border-radius:50%; font-size:12px; font-weight:700; }
+.member-label { flex:1; font-size:13px; font-weight:600; color:#3d4560; }
+.member .m-name { font-weight:600; background:#fff; }
+.member .m-role { background:#fff; margin-top:8px; }
+.member .m-contribution { min-height:60px; font-size:13px; background:#fff; margin-top:8px; }
+.remove { background:#fee; color:#e63946; border:none; width:30px; height:30px; border-radius:8px; font-size:14px; font-weight:bold; cursor:pointer; }
+.remove:hover { background:#e63946; color:#fff; }
+.add-member { width:100%; padding:14px; background:linear-gradient(135deg,#e8ecf3,#dde4ee); color:#667eea; border:2px dashed #b8c2d9; border-radius:12px; font-weight:700; font-size:14px; cursor:pointer; margin-top:8px; font-family:'Inter',Arial,sans-serif; }
+.add-member:hover { background:#667eea; color:#fff; border-color:#667eea; }
+
+.actions { display:flex; gap:12px; margin-top:20px; }
+.btn-cancel, .btn-submit { padding:15px 28px; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Inter',Arial,sans-serif; }
+.btn-cancel { background:rgba(255,255,255,0.25); color:#fff; }
+.btn-submit { background:linear-gradient(135deg,#4CAF50,#2e7d32); color:#fff; flex:1; box-shadow:0 8px 20px rgba(76,175,80,0.4); }
+.btn-submit:hover { transform:translateY(-2px); }
+
+.msg { padding:14px; border-radius:12px; margin-top:15px; display:none; font-size:14px; font-weight:600; text-align:center; color:#fff; }
+.ok { background:#4CAF50; display:block; }
+.err { background:#f44336; display:block; }

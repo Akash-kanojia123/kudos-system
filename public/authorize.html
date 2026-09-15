@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Connect Gmail — Kudos System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:linear-gradient(135deg,#667eea,#764ba2); min-height:100vh; padding:40px 20px; display:flex; align-items:center; justify-content:center; }
+    .card { max-width:560px; width:100%; background:#fff; border-radius:20px; padding:40px; box-shadow:0 25px 60px rgba(0,0,0,0.25); text-align:center; }
+    .icon { font-size:64px; margin-bottom:20px; }
+    h1 { color:#1a1f36; font-size:26px; font-weight:800; margin-bottom:10px; }
+    p { color:#555; line-height:1.7; margin-bottom:20px; font-size:15px; }
+    .benefits { text-align:left; background:#f8f9fc; padding:20px; border-radius:12px; margin:25px 0; }
+    .benefit { display:flex; align-items:center; gap:12px; padding:8px 0; font-size:14px; color:#333; }
+    input { width:100%; padding:14px 16px; border:2px solid #e8ecf3; border-radius:12px; font-size:15px; font-family:'Inter',sans-serif; margin-bottom:15px; }
+    input:focus { outline:none; border-color:#667eea; box-shadow:0 0 0 4px rgba(102,126,234,0.1); }
+    button { width:100%; padding:16px; background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; border:none; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; }
+    button:hover { transform:translateY(-2px); box-shadow:0 10px 25px rgba(102,126,234,0.4); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">🏆</div>
+    <h1>Connect Your Gmail</h1>
+    <p>Let the Kudos System monitor your inbox for client kudos emails — even when Gmail is closed.</p>
+    <div class="benefits">
+      <div class="benefit"><span>📧</span> <span>We scan your inbox daily for client kudos</span></div>
+      <div class="benefit"><span>🔔</span> <span>You get an email alert — no need to open Gmail</span></div>
+      <div class="benefit"><span>🔒</span> <span>Read-only access. We never send or delete emails.</span></div>
+      <div class="benefit"><span>✋</span> <span>You can disconnect anytime</span></div>
+    </div>
+    <input id="email" type="email" placeholder="your.email@grazitti.com" />
+    <button id="connectBtn">Connect Gmail</button>
+  </div>
+  <script>
+    document.getElementById('connectBtn').addEventListener('click', () => {
+      const email = document.getElementById('email').value.trim();
+      if (!email || !email.includes('@')) { alert('Please enter a valid email'); return; }
+      window.location.href = `/api/auth/gmail/start?email=${encodeURIComponent(email)}`;
+    });
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('email')) document.getElementById('email').value = params.get('email');
+  </script>
+</body>
+</html>

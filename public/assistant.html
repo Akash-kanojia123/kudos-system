@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistant Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:linear-gradient(135deg,#667eea,#764ba2,#f093fb); min-height:100vh; padding:30px 20px; }
+    .wrap { max-width:950px; margin:0 auto; }
+
+    .header { background:rgba(255,255,255,0.15); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:25px 30px; color:#fff; margin-bottom:22px; }
+    .header h1 { font-size:26px; font-weight:800; letter-spacing:-0.5px; }
+    .header p { font-size:13px; opacity:0.85; margin-top:5px; }
+
+    .card { background:#fff; border-radius:20px; padding:30px; margin-bottom:22px; box-shadow:0 20px 50px rgba(0,0,0,0.2); }
+    .card h2 { font-size:20px; font-weight:800; color:#1a1f36; margin-bottom:10px; }
+    .meta { color:#8b93a7; font-size:13px; margin-bottom:20px; }
+
+    .part { padding:20px; margin:14px 0; background:linear-gradient(135deg,#f8f9fc,#f0f3f9); border-radius:12px; font-size:14px; line-height:1.7; color:#3d4560; }
+    .part h3 { color:#1a1f36; font-size:15px; margin-bottom:12px; }
+
+    button { padding:15px 30px; border:none; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.25s; }
+    .send { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; box-shadow:0 8px 20px rgba(102,126,234,0.4); }
+    button:hover { transform:translateY(-2px); }
+
+    .msg { padding:14px; border-radius:12px; margin-top:15px; display:none; font-size:14px; font-weight:600; text-align:center; }
+    .ok { background:#e7f9ee; color:#1a7f47; }
+    .err { background:#fdecef; color:#b91c32; }
+
+    .empty { text-align:center; padding:60px 20px; color:#8b93a7; }
+    .empty-icon { font-size:60px; margin-bottom:20px; opacity:0.5; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h1>📤 Assistant Dashboard</h1>
+      <p>Final step — send CEO-approved kudos to all employees</p>
+    </div>
+    <div id="list"></div>
+  </div>
+
+  <script>
+    const COLORS = ['#667eea', '#4CAF50', '#ff9800', '#e91e63', '#9c27b0'];
+
+    async function load() {
+      const res = await fetch('/api/assistant/approved');
+      const data = await res.json();
+      const list = document.getElementById('list');
+
+      if (data.count === 0) {
+        list.innerHTML = `
+          <div class="card">
+            <div class="empty">
+              <div class="empty-icon">✨</div>
+              <p>No approved batches yet.</p>
+              <p style="font-size:14px;margin-top:8px;">Wait for CEO approval.</p>
+            </div>
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = '';
+      data.batches.forEach(b => {
+        const monthLabel = new Date(b.month + '-01').toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+
+        const partsHtml = (b.parts || []).map((p, i) => `
+          <div class="part" style="border-left:5px solid ${COLORS[i % COLORS.length]};">
+            <h3>${p.title}</h3>
+            <div>${p.content}</div>
+          </div>
+        `).join('');
+
+        list.innerHTML += `
+          <div class="card">
+            <h2>🏆 ${b.teamName || 'Team'} — ${monthLabel}</h2>
+            <p class="meta">CEO approved: ${new Date(b.approvedByCeoAt).toLocaleString('en-IN')}</p>
+            ${partsHtml}
+            <div style="text-align:center;margin-top:20px;">
+              <button class="send" onclick="sendToAll('${b._id}')">📤 Send to All Employees</button>
+            </div>
+            <div id="msg-${b._id}" class="msg"></div>
+          </div>
+        `;
+      });
+    }
+
+    function showMsg(id, text, ok) {
+      const m = document.getElementById('msg-' + id);
+      m.style.display = 'block';
+      m.className = 'msg ' + (ok ? 'ok' : 'err');
+      m.textContent = text;
+    }
+
+    async function sendToAll(id) {
+      if (!confirm('Send this kudos email to ALL employees?')) return;
+
+      const res = await fetch(`/api/assistant/send-to-all/${id}`, { method: 'POST' });
+      const data = await res.json();
+
+      showMsg(id, res.ok ? '✅ Sent to all employees!' : '❌ ' + data.error, res.ok);
+      setTimeout(load, 1500);
+    }
+
+    load();
+  </script>
+</body>
+</html>

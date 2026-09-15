@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TM Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Inter',sans-serif; background:linear-gradient(135deg,#1e3c72,#2a5298,#667eea); min-height:100vh; padding:30px 20px; }
+    .wrap { max-width:1100px; margin:0 auto; }
+
+    .header { background:rgba(255,255,255,0.12); backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.2); border-radius:20px; padding:25px 30px; color:#fff; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; }
+    .header h1 { font-size:24px; font-weight:800; letter-spacing:-0.5px; }
+    .header p { font-size:13px; opacity:0.85; margin-top:4px; }
+    .header input { padding:11px 15px; border:none; border-radius:10px; font-size:14px; width:280px; font-family:'Inter',sans-serif; }
+
+    .card { background:#fff; border-radius:20px; padding:28px 32px; margin-bottom:18px; box-shadow:0 15px 40px rgba(0,0,0,0.15); }
+    .card h2 { font-size:18px; font-weight:800; color:#1a1f36; margin-bottom:18px; display:flex; justify-content:space-between; align-items:center; }
+    .stat { background:linear-gradient(135deg,#667eea,#764ba2); color:#fff; padding:6px 16px; border-radius:20px; font-size:13px; font-weight:700; }
+
+    .k { background:linear-gradient(135deg,#f8f9fc,#f0f3f9); border-left:4px solid #667eea; padding:20px 24px; border-radius:14px; margin-bottom:14px; }
+    .k .client { font-weight:700; color:#1a1f36; font-size:16px; }
+    .k .sub { color:#8b93a7; font-size:12.5px; margin-top:2px; }
+    .k .msg { color:#555; font-style:italic; margin:12px 0; font-size:14px; line-height:1.6; padding:12px; background:#fff; border-radius:8px; }
+    .k .members { margin:10px 0; }
+    .k .member-row { padding:6px 0; font-size:13px; color:#333; border-bottom:1px solid #eee; }
+    .k .member-row b { color:#1a1f36; }
+    .k .member-role { color:#667eea; font-size:12px; }
+    .k .member-contrib { color:#555; font-size:12.5px; margin-top:3px; font-style:italic; }
+    .k .actions { margin-top:14px; display:flex; gap:10px; flex-wrap:wrap; }
+
+    button { padding:11px 20px; border:none; border-radius:10px; font-size:13px; font-weight:700; cursor:pointer; font-family:'Inter',sans-serif; transition:all 0.2s; }
+    .approve { background:linear-gradient(135deg,#4CAF50,#2e7d32); color:#fff; }
+    .reject { background:linear-gradient(135deg,#f44336,#c62828); color:#fff; }
+    .send-ceo { background:linear-gradient(135deg,#9c27b0,#7b1fa2); color:#fff; padding:15px 32px; font-size:15px; box-shadow:0 8px 20px rgba(156,39,176,0.35); }
+    button:hover { transform:translateY(-2px); box-shadow:0 8px 18px rgba(0,0,0,0.15); }
+
+    .msg-box { padding:14px; border-radius:12px; margin-top:14px; display:none; font-size:14px; font-weight:600; text-align:center; }
+    .ok { background:#e7f9ee; color:#1a7f47; }
+    .err { background:#fdecef; color:#b91c32; }
+
+    .empty { text-align:center; padding:40px; color:#8b93a7; font-size:14px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card" id="ceoRejectedCard" style="display:none; border-left:6px solid #f44336;">
+  <h2 style="color:#f44336;">🔴 Sent Back by CEO <span class="stat" id="ceoRejectedCount" style="background:#f44336;">0</span></h2>
+  <p style="color:#666;font-size:13px;margin-bottom:15px;">CEO reviewed these and sent them back. Please fix and re-send.</p>
+  <div id="ceoRejected"></div>
+</div>
+    <div class="header">
+      <div>
+        <h1>👥 Team Manager Dashboard</h1>
+        <p>Review TL kudos and forward to CEO</p>
+      </div>
+      <input id="tmEmail" placeholder="Enter your TM email" onchange="loadAll()">
+    </div>
+
+    <div class="card">
+      <h2>⏳ Pending Review <span class="stat" id="pendingCount">0</span></h2>
+      <div id="pending"><div class="empty">Enter your email to see pending kudos.</div></div>
+      <div id="msg" class="msg-box"></div>
+    </div>
+
+    <div class="card">
+      <h2>✅ Approved (Ready to Send) <span class="stat" id="approvedCount">0</span></h2>
+      <div id="approved"></div>
+      <div style="text-align:center;margin-top:20px;">
+        <button class="send-ceo" onclick="sendToCEO()">📤 Send All Approved to CEO</button>
+      </div>
+      <div id="msg2" class="msg-box"></div>
+    </div>
+  </div>
+
+  <script>
+  async function loadAll() {
+  const email = document.getElementById('tmEmail').value.trim();
+  if (!email) return;
+
+  const res = await fetch(`/api/tm/pending/${encodeURIComponent(email)}`);
+  const data = await res.json();
+
+  // Counts
+  document.getElementById('pendingCount').textContent = data.pending.length;
+  document.getElementById('approvedCount').textContent = data.approved.length;
+
+  // ============ CEO REJECTED SECTION ============
+  const ceoRejectedCard = document.getElementById('ceoRejectedCard');
+  const ceoRejectedDiv = document.getElementById('ceoRejected');
+  const ceoRejectedCount = document.getElementById('ceoRejectedCount');
+
+  if (data.ceoRejectedBatches && data.ceoRejectedBatches.length > 0) {
+    ceoRejectedCard.style.display = 'block';
+    ceoRejectedCount.textContent = data.ceoRejectedBatches.length;
+ceoRejectedDiv.innerHTML = data.ceoRejectedBatches.map(b => `
+  <div class="k" style="border-left:4px solid #f44336;background:#fff5f5;">
+    <div class="client">Batch: ${b.teamName || 'Team'} — ${b.month}</div>
+    <div style="background:#fff3cd;padding:12px;border-radius:8px;margin:12px 0;border-left:3px solid #f44336;">
+      <b>CEO Comment:</b>
+      <div style="font-style:italic;color:#856404;margin-top:5px;">"${b.ceoComment || 'No reason given'}"</div>
+    </div>
+    <div style="font-size:13px;color:#666;margin-bottom:10px;">
+      <b>Parts in batch:</b> ${b.parts ? b.parts.length : 0}
+    </div>
+    <div class="actions">
+      <button class="approve" onclick="resendToCeo('${b._id}')">🔄 Re-send to CEO</button>
+      <button class="reject" onclick="sendBackToTLs('${b._id}')">↩️ Send Back to TLs</button>
+      <button onclick="viewBatch('${b._id}')" style="background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;">👁️ View</button>
+    </div>
+  </div>
+`).join('');
+  } else {
+    ceoRejectedCard.style.display = 'none';
+  }
+
+  // ============ PENDING SECTION ============
+  const pending = document.getElementById('pending');
+  pending.innerHTML = data.pending.length === 0
+    ? '<div class="empty">No pending kudos.</div>'
+    : data.pending.map(k => renderCard(k, true)).join('');
+
+  // ============ APPROVED SECTION (filter out CEO-rejected ones) ============
+  const ceoRejectedIds = new Set();
+  (data.ceoRejectedBatches || []).forEach(b => {
+    // We can't easily map batch to kudos here, so just show all approved
+  });
+
+  const approved = document.getElementById('approved');
+  approved.innerHTML = data.approved.length === 0
+    ? '<div class="empty">No approved kudos yet.</div>'
+    : data.approved.map(k => renderCard(k, false)).join('');
+}
+
+// Re-send CEO-rejected batch
+async function resendToCeo(batchId) {
+  if (!confirm('Re-send this batch to CEO?')) return;
+
+  const res = await fetch(`/api/tm/resend-to-ceo/${batchId}`, { method: 'POST' });
+  const data = await res.json();
+
+  if (data.success) {
+    alert('✅ Re-sent to CEO!');
+    loadAll();
+  } else {
+    alert('❌ ' + data.error);
+  }
+}
+
+// View batch details
+function viewBatch(batchId) {
+  alert('Batch ID: ' + batchId + '\n\n(View full details feature can be added later)');
+}
+
+   
+   
+   
+    function renderCard(k, showActions) {
+      const membersHtml = (k.members || []).map(m => `
+        <div class="member-row">
+          <b>${m.name}</b>${m.role ? ' <span class="member-role">— ' + m.role + '</span>' : ''}
+          ${m.contribution ? '<div class="member-contrib">' + m.contribution + '</div>' : ''}
+        </div>
+      `).join('');
+
+      return `
+        <div class="k">
+          <div class="client">${k.clientName}</div>
+          <div class="sub">${k.clientEmail || ''} • TL: ${k.submittedBy}</div>
+          <div class="msg">"${k.message}"</div>
+          ${membersHtml ? '<div class="members">' + membersHtml + '</div>' : ''}
+          <div class="sub">Team: ${k.team}</div>
+          ${showActions ? `
+            <div class="actions">
+              <button class="approve" onclick="approve('${k._id}')">✅ Approve</button>
+              <button class="reject" onclick="reject('${k._id}')">↩️ Send Back to TL</button>
+            </div>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    async function approve(id) {
+      await fetch(`/api/tm/approve/${id}`, { method: 'POST' });
+      loadAll();
+    }
+
+    async function reject(id) {
+      const comment = prompt('Reason for sending back to TL:');
+      if (comment === null) return;
+      await fetch(`/api/tm/reject/${id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment })
+      });
+      loadAll();
+    }
+
+    async function sendToCEO() {
+      const email = document.getElementById('tmEmail').value.trim();
+      if (!confirm('Send all approved kudos to CEO?')) return;
+
+      const res = await fetch(`/api/tm/send-to-ceo/${encodeURIComponent(email)}`, { method: 'POST' });
+      const data = await res.json();
+
+      const msg = document.getElementById('msg2');
+      msg.style.display = 'block';
+      msg.className = 'msg-box ' + (res.ok ? 'ok' : 'err');
+      msg.textContent = res.ok ? '✅ Sent to CEO successfully!' : '❌ ' + data.error;
+      loadAll();
+    }
+
+    // Send all kudos in batch back to their respective TLs
+async function sendBackToTLs(batchId) {
+  if (!confirm('Send all kudos in this batch back to the TLs for editing?\n\nEach TL will get an email with CEO\'s feedback.')) return;
+
+  const res = await fetch(`/api/tm/send-back-to-tls/${batchId}`, { method: 'POST' });
+  const data = await res.json();
+
+  if (data.success) {
+    alert(`✅ Sent back to ${data.count} TL(s). They will receive an email.`);
+    loadAll();
+  } else {
+    alert('❌ ' + data.error);
+  }
+}
+
+// View batch details (placeholder — can be expanded later)
+function viewBatch(batchId) {
+  alert('Batch ID: ' + batchId + '\n\nFull batch preview can be added later.\nFor now, use the "Re-send to CEO" or "Send Back to TLs" buttons.');
+}
+  </script>
+</body>
+</html>
