@@ -1,8 +1,4 @@
-// ============================================================
-// KUDOS EXTRACTOR — Content Script (Final Version)
-// ============================================================
-
-const SERVER_URL = 'http://localhost:4000';
+ const SERVER_URL = 'https://kudos-system-production.up.railway.app';;
 
 console.log('🏆 Kudos Extractor LOADED');
 

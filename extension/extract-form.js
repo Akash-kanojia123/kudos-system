@@ -1,8 +1,8 @@
 // ============================================================
 // EXTRACT FORM
 // ============================================================
+const SERVER_URL = 'https://kudos-system-production.up.railway.app';
 
-const SERVER_URL = 'http://localhost:4000';
 let pendingData = null;
 
 document.addEventListener('DOMContentLoaded', () => {
