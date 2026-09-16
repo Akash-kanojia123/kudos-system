@@ -78,6 +78,8 @@
 //     console.log(`   Assistant:  http://localhost:${PORT}/assistant.html\n`);
 //   });
 // })();
+
+
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
@@ -105,6 +107,16 @@ app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('DB Connection Middleware Error:', error);
+    res.status(500).json({ error: 'Database connection failed' });
+  }
+});
+
 app.use('/api/tl', require('./routes/tl'));
 app.use('/api/assistant', require('./routes/assistant'));
 app.use('/api/ceo', require('./routes/ceo'));
@@ -120,7 +132,5 @@ app.get('/test-scan', async (req, res) => {
   const result = await scanAllTLs();
   res.json(result);
 });
-
-connectDB().catch(err => console.error('DB error:', err));
 
 module.exports = app;
