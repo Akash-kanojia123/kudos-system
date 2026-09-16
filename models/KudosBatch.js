@@ -10,7 +10,7 @@ const KudosBatchSchema = new mongoose.Schema({
   }],
   status: {
     type: String,
-    enum: ['drafting', 'pending_ceo', 'approved', 'ceo_rejected_dismissed', 'sent'],
+    enum: ['drafting', 'pending_ceo', 'approved', 'ceo_rejected_dismissed', 'sent','ceo_rejected'],
     default: 'drafting'
   },
   sentToCeoAt:     { type: Date },
