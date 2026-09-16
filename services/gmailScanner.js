@@ -4,18 +4,17 @@ const { getGmailClient } = require('../config/gmail');
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
   },
   family: 4,
-  connectionTimeout: 10000,
-  greetingTimeout: 10000,
-  socketTimeout: 15000
+  connectionTimeout: 8000,
+  greetingTimeout: 8000,
+  socketTimeout: 8000
 });
-
 // ============================================================
 // CONSTANTS
 // ============================================================
@@ -25,7 +24,7 @@ const KUDOS_KEYWORDS = [
   'appreciate', 'excellent work', 'thank you for', 'well done',
   'fantastic work', 'outstanding', 'impressed', 'amazing work',
   'keep up the good work', 'great job', 'exceeded expectations',
-  'awesome work', 'brilliant', 'superb', 'exceptional work'
+  'awesome work', 'brilliant', 'superb', 'exceptional work','keep it up', 'keep up'
 ];
 
 const INTERNAL_DOMAIN = '@grazitti.com';
