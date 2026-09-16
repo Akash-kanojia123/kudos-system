@@ -7,7 +7,7 @@
  "host_permissions": [
   "https://mail.google.com/*",
   "http://localhost:4000/*",
-  "https://kudos-system-production.up.railway.app/*"
+ "https://*.vercel.app/*"
 ],
   "action": {
     "default_popup": "popup.html",

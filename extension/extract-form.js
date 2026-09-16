@@ -1,7 +1,7 @@
 // ============================================================
 // EXTRACT FORM
 // ============================================================
-const SERVER_URL = 'https://kudos-system-production.up.railway.app';
+const SERVER_URL = 'https://kudos-system.vercel.app'
 
 let pendingData = null;
 
